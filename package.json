@@ -10,5 +10,8 @@
   "license": "MIT",
   "devDependencies": {
     "http-server": "0.12.3"
+  },
+  "dependencies": {
+    "wrtc": "0.4.7"
   }
 }
