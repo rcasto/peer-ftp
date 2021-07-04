@@ -3,10 +3,11 @@ import Peer from 'simple-peer';
 import prompt from 'prompt';
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
-import { access, createReadStream, createWriteStream } from 'fs';
+import { access, createReadStream, createWriteStream, stat } from 'fs';
 import { promisify } from 'util';
 
 const accessPromise = promisify(access);
+const statPromise = promisify(stat);
 
 // simple-peer internally supplies default ice servers:
 // https://github.com/feross/simple-peer/blob/d972548299a50f836ca91c36e39304ef0f9474b7/index.js#L1038
@@ -31,11 +32,21 @@ async function host(inputFilePath: string): Promise<void> {
 
         hostPeer.signal(answer as string);
     });
-    hostPeer.on('connect', () => {
-        console.log('Connected to peer!');
+    hostPeer.on('connect', async () => {
+        console.log('\nConnected to peer!');
+
+        // Let's find the size of the file
+        const { size: fileSizeInBytes } = await statPromise(inputFilePath);
+        let numBytesSent = 0;
+
+        console.log(`Size of file being transferred is ${fileSizeInBytes} bytes`);
+        hostPeer.send(JSON.stringify({
+            type: 'size',
+            data: fileSizeInBytes,
+        }));
 
         const inputFileReadableStream = createReadStream(inputFilePath, {
-            encoding: 'utf8',
+            encoding: 'binary',
         });
 
         inputFileReadableStream.on('data', chunk => {
@@ -43,8 +54,10 @@ async function host(inputFilePath: string): Promise<void> {
                 type: 'data',
                 data: chunk,
             }));
-        });
 
+            numBytesSent += chunk.length;
+            console.log(`Sent ${numBytesSent} - ${numBytesSent / fileSizeInBytes * 100}`);
+        });
         inputFileReadableStream.on('end', () => {
             console.log('Done transmitting file to peer.');
 
@@ -53,7 +66,6 @@ async function host(inputFilePath: string): Promise<void> {
                 type: 'end',
             }));
         });
-
         inputFileReadableStream.on('error', err => {
             console.error(`Error occurred during file transfer: ${err}`);
         });
@@ -71,11 +83,13 @@ async function client(outputFilePath: string): Promise<void> {
         wrtc,
     });
     const outputFileWritableStream = createWriteStream(outputFilePath, {
-        encoding: 'utf8',
+        encoding: 'binary',
     });
+    let fileSizeInBytes = 0;
+    let numBytesReceived = 0;
 
     outputFileWritableStream.on('finish', () => {
-        console.log("Write completed.");
+        console.log('Done receiving file from peer.');
     });
     outputFileWritableStream.on('error', err => {
         console.error(`Error occurred during file transfer: ${err}`);
@@ -91,8 +105,13 @@ async function client(outputFilePath: string): Promise<void> {
         const { type, data } = JSON.parse(message);
 
         switch(type) {
+            case 'size':
+                fileSizeInBytes = data;
+                break;
             case 'data':
+                numBytesReceived += data.length;
                 outputFileWritableStream.write(data);
+                console.log(`Received ${numBytesReceived} - ${numBytesReceived / fileSizeInBytes * 100}`);
                 break;
             case 'end':
                 outputFileWritableStream.end();
