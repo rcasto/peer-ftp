@@ -1,6 +1,8 @@
 import wrtc from 'wrtc';
 import Peer from 'simple-peer';
 import prompt from 'prompt';
+import yargs from 'yargs';
+import { hideBin } from 'yargs/helpers';
 
 // simple-peer internally supplies default ice servers:
 // https://github.com/feross/simple-peer/blob/d972548299a50f836ca91c36e39304ef0f9474b7/index.js#L1038
@@ -71,16 +73,32 @@ async function client() {
     clientPeer.signal(offer as string);
 }
 
+// npx peer-cli -i <input-file-path>   ---> offerer
+// npx peer-cli -o <output-file-path>  ---> answerer
+async function main() {
+    const argv = await yargs(hideBin(process.argv))
+        .option('input', {
+            alias: 'i',
+            description: 'File path to input file being shared with peer.',
+            type: 'string',
+        })
+        .option('output', {
+            alias: 'o',
+            description: 'File path of where to save file being shared by peer.',
+            type: 'string',
+        })
+        .help()
+        .alias('help', 'h')
+        .conflicts('input', 'output')
+        .check(argv => {
+            if (!argv.input && !argv.output) {
+                throw new Error('Neither input or output option was set, one of them must be set.');
+            }
+            return true;
+        })
+        .argv;
 
-// npx peer-cli host (maybe no need to include host/join)
-// npx peer-cli --answer
-// npx peer-cli host -av (audio + video, default data channel)
-function main() {
-    const args = process.argv.slice(2);
-
-    const isAnswerer = args.some(arg => arg === '--answer');
-
-    if (isAnswerer) {
+    if (argv.input) {
         client();
     } else {
         host();
