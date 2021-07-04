@@ -40,7 +40,7 @@ async function host(inputFilePath: string): Promise<void> {
         let numBytesSent = 0;
 
         console.log(`Size of file being transferred is ${fileSizeInBytes} bytes`);
-        hostPeer.send(JSON.stringify({
+        hostPeer.write(JSON.stringify({
             type: 'size',
             data: fileSizeInBytes,
         }));
@@ -50,7 +50,7 @@ async function host(inputFilePath: string): Promise<void> {
         });
 
         inputFileReadableStream.on('data', chunk => {
-            hostPeer.send(JSON.stringify({
+            hostPeer.write(JSON.stringify({
                 type: 'data',
                 data: chunk,
             }));
@@ -62,7 +62,7 @@ async function host(inputFilePath: string): Promise<void> {
             console.log('Done transmitting file to peer.');
 
             // Let peer know the end has been reached
-            hostPeer.send(JSON.stringify({
+            hostPeer.write(JSON.stringify({
                 type: 'end',
             }));
         });
