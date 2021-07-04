@@ -4,19 +4,6 @@ import prompt from 'prompt';
 
 // simple-peer internally supplies default ice servers:
 // https://github.com/feross/simple-peer/blob/d972548299a50f836ca91c36e39304ef0f9474b7/index.js#L1038
-//
-// const peerConfig = {
-//     iceServers: [
-//         // Google STUN Servers
-//         {
-//             urls: [
-//                 'stun:stun.l.google.com:19302',
-//                 'stun:stun1.l.google.com:19302',
-//                 'stun:stun2.l.google.com:19302',
-//             ],
-//         }
-//     ],
-// };
 
 async function host() {
     const hostPeer = new Peer({
