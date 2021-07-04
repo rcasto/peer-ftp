@@ -56,7 +56,7 @@ async function host(inputFilePath: string): Promise<void> {
             }));
 
             numBytesSent += chunk.length;
-            console.log(`Sent ${numBytesSent} - ${numBytesSent / fileSizeInBytes * 100}`);
+            console.log(`Sent ${numBytesSent / fileSizeInBytes * 100}%`);
         });
         inputFileReadableStream.on('end', () => {
             console.log('Done transmitting file to peer.');
@@ -107,11 +107,12 @@ async function client(outputFilePath: string): Promise<void> {
         switch(type) {
             case 'size':
                 fileSizeInBytes = data;
+                console.log(`Size of file being received is ${fileSizeInBytes} bytes`);
                 break;
             case 'data':
                 numBytesReceived += data.length;
                 outputFileWritableStream.write(data);
-                console.log(`Received ${numBytesReceived} - ${numBytesReceived / fileSizeInBytes * 100}`);
+                console.log(`Received ${numBytesReceived / fileSizeInBytes * 100}%`);
                 break;
             case 'end':
                 outputFileWritableStream.end();
