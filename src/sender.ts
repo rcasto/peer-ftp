@@ -1,5 +1,6 @@
 import wrtc from 'wrtc';
 import Peer from 'simple-peer';
+import { createHash } from 'crypto';
 import { access, createReadStream, stat } from 'fs';
 import prompt from 'prompt';
 import { promisify } from 'util';
@@ -35,6 +36,7 @@ export async function sender(inputFilePath: string): Promise<void> {
 
         // Let's find the size of the file
         const { size: fileSizeInBytes } = await statPromise(inputFilePath);
+        const hash = createHash('sha256');
         let numBytesSent = 0;
 
         console.log(`Size of file being transferred is ${fileSizeInBytes} bytes`);
@@ -52,6 +54,7 @@ export async function sender(inputFilePath: string): Promise<void> {
                 type: 'data',
                 data: chunk,
             }));
+            hash.update(chunk);
 
             numBytesSent += chunk.length;
             console.log(`Sent ${(numBytesSent / fileSizeInBytes * 100).toFixed(2)}%`);
@@ -62,11 +65,29 @@ export async function sender(inputFilePath: string): Promise<void> {
             // Let peer know the end has been reached
             senderPeer.write(JSON.stringify({
                 type: 'end',
+                data: hash.digest('hex'),
             }));
         });
         inputFileReadableStream.on('error', err => {
             console.error(`Error occurred during file transfer: ${err}`);
         });
+    });
+    senderPeer.on('data', message => {
+        const { type, data } = JSON.parse(message);
+
+        switch(type) {
+            case 'result':
+                if (data) {
+                    console.log(`Verified that the receiver got the file in one piece, all is well.`);
+                    process.exit(0);
+                } else {
+                    console.error(`Seems the file got corrupted in transmission, based on the receivers results, please try again.`);
+                    process.exit(1);
+                }
+                break;
+            default:
+                console.log(`Unknown message type ${type} received: ${message}`);
+        }
     });
     senderPeer.on('error', err => {
         console.error(`Error: ${err}`);
