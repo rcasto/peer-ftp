@@ -1,28 +1,30 @@
-# PeerPass CLI
+# peer-ftp
+A tool to share files between peers.
 
-A node based CLI tool to establish a peer to peer connection.
+## Usage
+Tool is very simple right now and doesn't have a ton of levers for configuration. The basic usage and flow is shown below.
 
-- text based chat
-- file sharing
-- video/audio chat?
+### Flow
+1. Sender initiates send of file with `peer-ftp`
+2. Senders uses external channel to pass one time code to receiver
+3. Receiver starts `peer-ftp` and enters one time code from sender
+4. Receiver uses external channel to pass one time code to sender
+5. Sender enters one time code from receiver into `peer-ftp`
+6. Sender and receiver should now be connected and file should start transferring
 
-## Steps to establish a connection
+### Sender
+```
+npx peer-ftp -i <input-file-path>
+```
 
-Host: `npx peerpass text`
+### Receiver
+```
+npx peer-ftp -o <output-file-path>
+```
 
-Joiner: `npx peerpass text -i` - input offer via standard input
-
-Offer and Answer session descriptions are logged in the console (standard output) as well as a QR code
-
-### Sharing session description
-
-You pick how you want to share the session description, but here are some ideas:
-
-- email
-- sms
-- Qr code scanning
-
-## Questions
-
-- When creating the offer/answer does the channel of description need to be included in its creation?
-  - Video/audio?
+## Potential Improvements/Continual Work
+- Send/Receive more than 1 file
+  - Maybe pattern based matching on files to send
+  - Allow specifying directory for output
+- Allow passing in custom STUN/TURN servers
+- ...

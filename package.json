@@ -1,8 +1,8 @@
 {
-  "name": "peer-cli",
+  "name": "peer-ftp",
   "version": "0.0.1",
-  "description": "",
-  "main": "index.js",
+  "description": "A tool to share files between peers.",
+  "main": "dist/index.js",
   "scripts": {
     "start": "node dist/index.js",
     "build": "tsc",
