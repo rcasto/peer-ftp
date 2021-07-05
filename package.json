@@ -10,7 +10,8 @@
     "start": "node dist/index.js",
     "build": "tsc",
     "dev": "npm-run-all clean build start",
-    "clean": "rimraf dist"
+    "clean": "rimraf dist",
+    "prepack": "npm-run-all clean build"
   },
   "author": "Richie Casto (https://github.com/rcasto)",
   "license": "MIT",
