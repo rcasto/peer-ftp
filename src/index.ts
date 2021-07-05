@@ -5,6 +5,7 @@ import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 import { access, createReadStream, createWriteStream, stat } from 'fs';
 import { promisify } from 'util';
+import { retrieveSDP, submitSDP } from './peerPassClient';
 
 const accessPromise = promisify(access);
 const statPromise = promisify(stat);
@@ -24,13 +25,15 @@ async function host(inputFilePath: string): Promise<void> {
     });
 
     hostPeer.on('signal', async data => {
-        console.log(`Send the below offer session description to your peer:\n\n${JSON.stringify(data)}\n`);
+        const code = await submitSDP(data as RTCSessionDescriptionInit);
+        console.log(`Send the below offer code to your peer:\n${code}\n`);
 
-        const { answer } = await prompt.get([
-            'answer',
+        const { answerCode } = await prompt.get([
+            'answerCode',
         ]);
+        const sdpData = await retrieveSDP(answerCode as string);
 
-        hostPeer.signal(answer as string);
+        hostPeer.signal(sdpData);
     });
     hostPeer.on('connect', async () => {
         console.log('\nConnected to peer!');
@@ -95,8 +98,9 @@ async function client(outputFilePath: string): Promise<void> {
         console.error(`Error occurred during file transfer: ${err}`);
     });
 
-    clientPeer.on('signal', data => {
-        console.log(`\nSend the below answer session description back to your peer:\n\n${JSON.stringify(data)}\n`);
+    clientPeer.on('signal', async data => {
+        const code = await submitSDP(data as RTCSessionDescriptionInit);
+        console.log(`\nSend the below answer code back to your peer:\n${code}\n`);
     });
     clientPeer.on('connect', () => {
         console.log('Connected to peer!');
@@ -123,13 +127,14 @@ async function client(outputFilePath: string): Promise<void> {
     });
     clientPeer.on('error', err => {
         console.error(`Error: ${err}`);
-    });
+    });``
 
-    const { offer } = await prompt.get([
-        'offer',
+    const { offerCode } = await prompt.get([
+        'offerCode',
     ]);
+    const sdpData = await retrieveSDP(offerCode as string);
 
-    clientPeer.signal(offer as string);
+    clientPeer.signal(sdpData);
 }
 
 // npx peer-cli -i <input-file-path>   ---> offerer
