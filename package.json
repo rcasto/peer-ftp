@@ -3,6 +3,9 @@
   "version": "0.0.1",
   "description": "A tool to share files between peers.",
   "main": "dist/index.js",
+  "bin": {
+    "peer-ftp": "dist/index.js"
+  },
   "scripts": {
     "start": "node dist/index.js",
     "build": "tsc",
