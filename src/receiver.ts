@@ -64,7 +64,6 @@ export async function receiver(outputFilePath: string): Promise<void> {
                     console.error(`File verification has failed. Letting the sender know now, please try again.`);
                     process.exit(1);
                 }
-                break;
             default:
                 console.log(`Unknown message type ${type} received: ${message}`);
         }
@@ -79,4 +78,5 @@ export async function receiver(outputFilePath: string): Promise<void> {
     const sdpData = await retrieveSDP(offerCode as string);
 
     receiverPeer.signal(sdpData);
+    console.log(`Generating answer`);
 }
