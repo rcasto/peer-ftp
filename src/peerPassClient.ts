@@ -1,6 +1,6 @@
 import fetch from 'node-fetch';
 
-const baseUrl = 'https://peer-pass.com';
+const baseUrl = 'https://peerpass-315217.ue.r.appspot.com';
 const submitApiUrl = `${baseUrl}/api/peer/submit`;
 const retrieveApiUrl = `${baseUrl}/api/peer/retrieve`;
 
