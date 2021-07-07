@@ -15,7 +15,20 @@
     "prepack": "npm-run-all clean build"
   },
   "author": "Richie Casto (https://github.com/rcasto)",
+  "homepage": "https://github.com/rcasto/peer-ftp#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rcasto/peer-ftp.git"
+  },
   "license": "MIT",
+  "keywords": [
+    "webrtc",
+    "webrtc stream",
+    "data channel",
+    "p2p",
+    "peer-to-peer",
+    "peer"
+  ],
   "devDependencies": {
     "@babel/core": "7.14.6",
     "@babel/preset-env": "7.14.7",
