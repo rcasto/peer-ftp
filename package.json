@@ -1,7 +1,7 @@
 {
   "name": "peer-ftp",
   "version": "0.0.1",
-  "description": "A tool to share files between peers.",
+  "description": "A tool to share files between peers, simply, and quickly.",
   "main": "dist/index.js",
   "bin": {
     "peer-ftp": "dist/index.js"
