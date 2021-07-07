@@ -1,6 +1,6 @@
 import wrtc from 'wrtc';
 import Peer from 'simple-peer';
-import { createWriteStream } from 'fs';
+import { createWriteStream, WriteStream } from 'fs';
 import prompt from 'prompt';
 import { retrieveSDP, submitSDP } from './peerPassClient';
 import { createHash } from 'crypto';
@@ -12,19 +12,10 @@ export async function receiver(outputFilePath: string): Promise<void> {
         objectMode: true,
         wrtc,
     });
-    const outputFileWritableStream = createWriteStream(outputFilePath, {
-        encoding: 'binary',
-    });
+    let outputFileWritableStream: WriteStream;
     const hash = createHash('sha256');
     let fileSizeInBytes = 0;
     let numBytesReceived = 0;
-
-    outputFileWritableStream.on('finish', () => {
-        console.log('Done receiving file from peer.');
-    });
-    outputFileWritableStream.on('error', err => {
-        console.error(`Error occurred during file transfer: ${err}`);
-    });
 
     receiverPeer.on('signal', async data => {
         const code = await submitSDP(data as RTCSessionDescriptionInit);
@@ -32,6 +23,17 @@ export async function receiver(outputFilePath: string): Promise<void> {
     });
     receiverPeer.on('connect', () => {
         console.log('Connected to peer!');
+
+        outputFileWritableStream = createWriteStream(outputFilePath, {
+            encoding: 'binary',
+        });
+
+        outputFileWritableStream.on('finish', () => {
+            console.log('Done receiving file from peer.');
+        });
+        outputFileWritableStream.on('error', err => {
+            console.error(`Error occurred during file transfer: ${err}`);
+        });
     });
     receiverPeer.on('data', message => {
         const { type, data } = JSON.parse(message);
